@@ -10,87 +10,89 @@ const PORT = process.env.PORT || 3001
 
 io.on('connection', (socket) => {
     socket.on(ACTIONS.JOIN, config => {
-        const {roomID, streamID} = config
+        const {roomId, streamId} = config
         const {rooms: joinedRooms} = socket
 
-        if (Array.from(joinedRooms).includes(roomID)) {
-            return console.warn(`Already joined to ${roomID}`)
+        if (Array.from(joinedRooms).includes(roomId)) {
+            return console.warn(`Already joined to ${roomId}`)
         }
 
-        const clients = Array.from(io.sockets.adapter.rooms.get(roomID) || [])
+        const clients = Array.from(io.sockets.adapter.rooms.get(roomId) || [])
 
-        socket.broadcast.emit(ACTIONS.ADD_ROOM, {
-            roomID,
-            streamID
-        })
-
-        clients.forEach(clientID => {
-            io.to(clientID).emit(ACTIONS.ADD_PEER, {
-                peerID: socket.id,
+        clients.forEach(clientId => {
+            io.to(clientId).emit(ACTIONS.ADD_PEER, {
+                peerId: socket.id,
                 createOffer: false,
             })
 
             socket.emit(ACTIONS.ADD_PEER, {
-                peerID: clientID,
+                peerId: clientId,
                 createOffer: true,
             })
         })
 
-        socket.join(roomID)
+        socket.join(roomId)
     })
 
     function leaveRoom() {
         const {rooms} = socket
 
         Array.from(rooms)
-            .forEach(roomID => {
-                const clients = Array.from(io.sockets.adapter.rooms.get(roomID) || []);
+            .forEach(roomId => {
+                const clients = Array.from(io.sockets.adapter.rooms.get(roomId) || []);
 
                 socket.broadcast.emit(ACTIONS.LEAVE, {
-                    roomID,
+                    roomId,
                 })
 
                 clients
-                    .forEach(clientID => {
-                        io.to(clientID).emit(ACTIONS.REMOVE_PEER, {
-                            peerID: socket.id,
+                    .forEach(clientId => {
+                        io.to(clientId).emit(ACTIONS.REMOVE_PEER, {
+                            peerId: socket.id,
                         })
 
                         socket.emit(ACTIONS.REMOVE_PEER, {
-                            peerID: clientID,
+                            peerId: clientId,
                         })
                     })
 
-                socket.leave(roomID)
+                socket.leave(roomId)
             })
     }
+
+    socket.on(ACTIONS.ADD_ROOM, ({roomId, streamId}) => {
+        io.to(roomId).emit(ACTIONS.ADD_ROOM, {
+            roomId,
+            streamId
+        })
+    })
 
     socket.on(ACTIONS.LEAVE, leaveRoom)
 
     socket.on('disconnecting', leaveRoom);
 
-    socket.on(ACTIONS.RELAY_SDP, ({peerID, sessionDescription}) => {
-        io.to(peerID).emit(ACTIONS.SESSION_DESCRIPTION, {
-            peerID: socket.id,
+    socket.on(ACTIONS.RELAY_SDP, ({peerId, sessionDescription}) => {
+        io.to(peerId).emit(ACTIONS.SESSION_DESCRIPTION, {
+            peerId: socket.id,
             sessionDescription,
         })
     })
 
-    socket.on(ACTIONS.RELAY_ICE, ({peerID, iceCandidate}) => {
-        io.to(peerID).emit(ACTIONS.ICE_CANDIDATE, {
-            peerID: socket.id,
+    socket.on(ACTIONS.RELAY_ICE, ({peerId, iceCandidate}) => {
+        io.to(peerId).emit(ACTIONS.ICE_CANDIDATE, {
+            peerId: socket.id,
             iceCandidate,
         })
     })
 
-    socket.on('join-chat', (roomID) => {
-        socket.join(roomID)
+    socket.on(ACTIONS.JOIN_CHAT, (roomId) => {
+        socket.join(roomId)
     })
 
-    socket.on('message', (data) => {
+    socket.on(ACTIONS.MESSAGE, (data) => {
         const clients = Array.from(io.sockets.adapter.rooms.get(data.id) || [])
-        clients.forEach(clientID => {
-            io.to(clientID).emit('message', {
+        clients.forEach(clientId => {
+            io.to(clientId).emit('message', {
                 ...data
             })
         })
@@ -98,5 +100,5 @@ io.on('connection', (socket) => {
 })
 
 server.listen(PORT, () => {
-    console.log('listening on *:3000');
+    console.log(`listening on *:${PORT}`);
 })

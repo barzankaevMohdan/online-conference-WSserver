@@ -9,6 +9,8 @@ const ACTIONS = {
     RELAY_ICE: 'relay-ice',
     ICE_CANDIDATE: 'ice-candidate',
     SESSION_DESCRIPTION: 'session-description',
+    JOIN_CHAT: 'join-chat',
+    MESSAGE: 'message',
 }
 
 module.exports = ACTIONS
