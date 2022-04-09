@@ -97,6 +97,48 @@ io.on('connection', (socket) => {
             })
         })
     })
+
+    socket.on(ACTIONS.DELETE_MESSAGE, (data) => {
+        const clients = Array.from(io.sockets.adapter.rooms)
+        clients.forEach(clientId => {
+            io.to(clientId).emit(ACTIONS.DELETE_MESSAGE, data)
+        })
+    })
+
+    socket.on(ACTIONS.EDIT_SPEECH, (data) => {
+        const clients = Array.from(io.sockets.adapter.rooms)
+        clients.forEach(clientId => {
+            io.to(clientId).emit(ACTIONS.EDIT_SPEECH, data)
+        })
+    })
+
+    socket.on(ACTIONS.EDIT_SPEAKER, (data) => {
+        const clients = Array.from(io.sockets.adapter.rooms)
+        clients.forEach(clientId => {
+            io.to(clientId).emit(ACTIONS.EDIT_SPEAKER, data)
+        })
+    })
+
+    socket.on(ACTIONS.DELETE_SPEECH, (data) => {
+        const clients = Array.from(io.sockets.adapter.rooms)
+        clients.forEach(clientId => {
+            io.to(clientId).emit(ACTIONS.DELETE_SPEECH, data)
+        })
+    })
+
+    socket.on(ACTIONS.DELETE_SPEAKER, (data) => {
+        const clients = Array.from(io.sockets.adapter.rooms)
+        clients.forEach(clientId => {
+            io.to(clientId).emit(ACTIONS.DELETE_SPEAKER, data)
+        })
+    })
+
+    socket.on(ACTIONS.EDIT_STREAM, (data) => {
+        const clients = Array.from(io.sockets.adapter.rooms)
+        clients.forEach(clientId => {
+            io.to(clientId).emit(ACTIONS.EDIT_STREAM, data)
+        })
+    })
 })
 
 server.listen(PORT, () => {
