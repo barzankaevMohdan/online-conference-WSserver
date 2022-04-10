@@ -17,6 +17,7 @@ const ACTIONS = {
     DELETE_SPEECH: 'delete-speech',
     DELETE_SPEAKER: 'delete-speaker',
     EDIT_STREAM: 'edit-stream',
+    DELETE_ROOM: 'delete-room',
 }
 
 module.exports = ACTIONS

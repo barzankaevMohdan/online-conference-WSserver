@@ -9,15 +9,14 @@ const ACTIONS = require('./actions')
 const PORT = process.env.PORT || 3001
 
 io.on('connection', (socket) => {
-    socket.on(ACTIONS.JOIN, config => {
-        const {roomId, streamId} = config
+    socket.on(ACTIONS.JOIN, id => {
         const {rooms: joinedRooms} = socket
 
-        if (Array.from(joinedRooms).includes(roomId)) {
-            return console.warn(`Already joined to ${roomId}`)
+        if (Array.from(joinedRooms).includes(id)) {
+            return console.warn(`Already joined to ${id}`)
         }
 
-        const clients = Array.from(io.sockets.adapter.rooms.get(roomId) || [])
+        const clients = Array.from(io.sockets.adapter.rooms.get(id) || [])
 
         clients.forEach(clientId => {
             io.to(clientId).emit(ACTIONS.ADD_PEER, {
@@ -31,7 +30,21 @@ io.on('connection', (socket) => {
             })
         })
 
-        socket.join(roomId)
+        socket.join(id)
+    })
+
+    socket.on(ACTIONS.DELETE_ROOM, (roomId) => {
+        const clients = Array.from(io.sockets.adapter.rooms)
+        clients.forEach(clientId => {
+            io.to(clientId).emit(ACTIONS.DELETE_ROOM, roomId)
+        })
+    })
+
+    socket.on(ACTIONS.ADD_ROOM, (room) => {
+        const clients = Array.from(io.sockets.adapter.rooms)
+        clients.forEach(clientId => {
+            io.to(clientId).emit(ACTIONS.ADD_ROOM, room)
+        })
     })
 
     function leaveRoom() {
@@ -40,10 +53,6 @@ io.on('connection', (socket) => {
         Array.from(rooms)
             .forEach(roomId => {
                 const clients = Array.from(io.sockets.adapter.rooms.get(roomId) || []);
-
-                socket.broadcast.emit(ACTIONS.LEAVE, {
-                    roomId,
-                })
 
                 clients
                     .forEach(clientId => {
@@ -59,13 +68,6 @@ io.on('connection', (socket) => {
                 socket.leave(roomId)
             })
     }
-
-    socket.on(ACTIONS.ADD_ROOM, ({roomId, streamId}) => {
-        io.to(roomId).emit(ACTIONS.ADD_ROOM, {
-            roomId,
-            streamId
-        })
-    })
 
     socket.on(ACTIONS.LEAVE, leaveRoom)
 
