@@ -92,6 +92,7 @@ io.on('connection', (socket) => {
     })
 
     socket.on(ACTIONS.MESSAGE, (data) => {
+        console.log(data);
         const clients = Array.from(io.sockets.adapter.rooms.get(data.id) || [])
         clients.forEach(clientId => {
             io.to(clientId).emit('message', {
