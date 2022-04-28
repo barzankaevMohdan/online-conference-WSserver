@@ -47,28 +47,6 @@ io.on('connection', (socket) => {
         })
     })
 
-    function leaveRoom() {
-        const {rooms} = socket
-
-        Array.from(rooms)
-            .forEach(roomId => {
-                const clients = Array.from(io.sockets.adapter.rooms.get(roomId) || []);
-
-                clients
-                    .forEach(clientId => {
-                        io.to(clientId).emit(ACTIONS.REMOVE_PEER, {
-                            peerId: socket.id,
-                        })
-
-                        socket.emit(ACTIONS.REMOVE_PEER, {
-                            peerId: clientId,
-                        })
-                    })
-
-                socket.leave(roomId)
-            })
-    }
-
     socket.on(ACTIONS.LEAVE, leaveRoom)
 
     socket.on('disconnecting', leaveRoom);
@@ -141,6 +119,28 @@ io.on('connection', (socket) => {
             io.to(clientId).emit(ACTIONS.EDIT_STREAM, data)
         })
     })
+
+    function leaveRoom() {
+        const {rooms} = socket
+
+        Array.from(rooms)
+            .forEach(roomId => {
+                const clients = Array.from(io.sockets.adapter.rooms.get(roomId) || []);
+
+                clients
+                    .forEach(clientId => {
+                        io.to(clientId).emit(ACTIONS.REMOVE_PEER, {
+                            peerId: socket.id,
+                        })
+
+                        socket.emit(ACTIONS.REMOVE_PEER, {
+                            peerId: clientId,
+                        })
+                    })
+
+                socket.leave(roomId)
+            })
+    }
 })
 
 server.listen(PORT, () => {
